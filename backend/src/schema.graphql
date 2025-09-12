@@ -1,0 +1,27 @@
+type Jeton {
+  id: Int!
+  nom: String!
+  description: String
+  lieuObtention: String
+  lieuEchange: String
+  rarete: String
+}
+
+input JetonInput {
+  nom: String!
+  description: String
+  lieuObtention: String
+  lieuEchange: String
+  rarete: String
+}
+
+type Query {
+  jetons: [Jeton!]!
+  jeton(id: Int!): Jeton
+}
+
+type Mutation {
+  createJeton(input: JetonInput!): Jeton!
+  updateJeton(id: Int!, input: JetonInput!): Jeton
+  deleteJeton(id: Int!): Jeton
+}
