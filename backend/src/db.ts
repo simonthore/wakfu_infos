@@ -8,7 +8,7 @@ export default new DataSource({
   port: 5432,
   username: "wakfu",
   password: "wakfu",
-  database: "wakfu",
+  database: "wakfu_db",
   synchronize: true,
   entities: [],
   logging: ["error"],
