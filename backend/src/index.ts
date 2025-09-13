@@ -1,39 +1,53 @@
 import "reflect-metadata";
-import express, { Application, Request, Response } from "express";
-import { ApolloServer } from "apollo-server-express";
+import http from "http";
 import cors from "cors";
-import { AppDataSource } from "./data-source";
-import { readFileSync } from "fs";
-import { jetonResolver } from "./resolvers/jetonResolver";
+import express from "express";
+import { ApolloServer } from "apollo-server-express";
+import {
+    ApolloServerPluginDrainHttpServer,
+    ApolloServerPluginLandingPageLocalDefault,
+} from "apollo-server-core";
+import db from "./db";
+import {env} from "./env";
 
-const start = async () => {
-  await AppDataSource.initialize();
+const start = async (): Promise<void> => {
+    await db.initialize();
+    const app = express() as any;
+    const httpServer = http.createServer(app);
+    const allowedOrigins = env.CORS_ALLOWED_ORIGINS.split(",");
 
-  const app = express();
+    app.use(
+        cors({
+            credentials: true,
+            origin: (origin, callback) => {
+                if (typeof origin === "undefined" || allowedOrigins.includes(origin))
+                    return callback(null, true);
+                callback(new Error("Not allowed by CORS"));
+            },
+        })
+    );
 
-  // Chargement du schéma GraphQL
-  const typeDefs = readFileSync(__dirname + "/schema.graphql", "utf-8");
+   
 
-  const server = new ApolloServer({
-    typeDefs,
-    resolvers: jetonResolver,
-  });
+    const server = new ApolloServer({
+        csrfPrevention: true,
+        cache: "bounded",
+        plugins: [
+            ApolloServerPluginDrainHttpServer({ httpServer }),
+            ApolloServerPluginLandingPageLocalDefault({ embed: true }),
+        ],
+        context: ({ req, res }) => {
+            return { req, res };
+        },
+    });
 
-  // await server.start();
-  // server.applyMiddleware({ app, path: "/graphql" }); 
-
-  // Middlewares Express
-  app.use(cors());
-  app.use(express.json());
-
-  app.get("/", (_req: Request, res: Response) => {
-    res.send("<h1>Wakfu Backend</h1>");
-  });
-
-  const port = process.env.PORT || 3000;
-  app.listen(port, () => {
-    console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`);
-  });
+    await server.start();
+    server.applyMiddleware({ app, cors: false, path: "/" });
+    httpServer.listen({ port: env.SERVER_PORT }, () =>
+        console.log(
+            `🚀 Server ready at ${env.SERVER_HOST}:${env.SERVER_PORT}${server.graphqlPath}`
+        )
+    );
 };
 
-void start();
+start().catch(console.error);

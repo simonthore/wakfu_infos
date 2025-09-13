@@ -5,8 +5,8 @@ services:
     container_name: wakfu_postgres
     restart: always
     environment:
-      POSTGRES_USER: wakfu
-      POSTGRES_PASSWORD: wakfu
+      POSTGRES_USER: wakfu_user
+      POSTGRES_PASSWORD: wakfu_pass
       POSTGRES_DB: wakfu_db
     ports:
       - "5432:5432"
