@@ -1,16 +1,18 @@
 import { DataSource } from 'typeorm';
 import {env, loadEnv} from "./env";
+import Jeton from './entity/Jeton';
+
 
 loadEnv();
 
-export const AppDataSource = new DataSource({
+export default new DataSource({
   type: "postgres",
-  host: process.env.DB_HOST || "localhost",
-  port: 5432,
-  username: process.env.POSTGRES_USER || "postgres",
-  password: process.env.POSTGRES_PASSWORD || "postgres",
-  database: process.env.POSTGRES_DB || "wakfu",
+  host: typeof env.DB_HOST !== "undefined" ? env.DB_HOST : "db",
+  port: 5433,
+  username:  "wakfu_user",
+  password: "wakfu",
+  database:   "wakfu_db",
   synchronize: true,
-  logging: true,
-  entities: [__dirname + "/entities/*.{ts,js}"],
+  entities: [Jeton],
+  logging:["error"]
 });
