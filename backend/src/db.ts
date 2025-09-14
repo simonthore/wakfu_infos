@@ -15,4 +15,5 @@ export default new DataSource({
   synchronize: true,
   entities: [Jeton],
   logging:["error"]
+  // test
 });
